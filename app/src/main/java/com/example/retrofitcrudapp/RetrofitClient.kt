@@ -1,4 +1,3 @@
-
 package com.example.retrofitcrudapp
 
 import retrofit2.Retrofit
@@ -10,11 +9,10 @@ object RetrofitClient {
         "https://66240d4504457d4aaf9b8530.mockapi.io/api/"
 
     val instance: AlumnoApi by lazy {
-        val retrofit = Retrofit.Builder()
+        Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-        retrofit.create(AlumnoApi::class.java)
+            .create(AlumnoApi::class.java)
     }
 }

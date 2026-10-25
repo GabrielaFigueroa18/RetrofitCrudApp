@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_margin="8dp"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/txtNombreProfesor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nombre del profesor"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#222222" />
+
+    <TextView
+        android:id="@+id/txtEdadProfesor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Edad: 35"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"
+        android:textColor="#666666" />
+
+</LinearLayout>

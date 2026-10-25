@@ -1,3 +1,4 @@
+
 package com.example.retrofitcrudapp
 
 import android.content.Intent
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
 
         val fabAgregar: FloatingActionButton =
@@ -29,8 +31,10 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+        // Inicializar la API
         api = RetrofitClient.instance
 
+        // Botón para agregar alumno
         fabAgregar.setOnClickListener {
             val intent = Intent(
                 this@MainActivity,
@@ -38,8 +42,6 @@ class MainActivity : AppCompatActivity() {
             )
             startActivity(intent)
         }
-
-        cargarDatos()
     }
 
     override fun onResume() {
@@ -50,7 +52,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ==========================================
+    // OBTENER ALUMNOS DESDE LA API
+    // ==========================================
+
     private fun cargarDatos() {
+
+        Log.d("API_ERROR", "Iniciando consulta de alumnos")
+
         api.obtenerAlumnos().enqueue(
             object : Callback<List<Alumno>> {
 
@@ -58,10 +67,23 @@ class MainActivity : AppCompatActivity() {
                     call: Call<List<Alumno>>,
                     response: Response<List<Alumno>>
                 ) {
+
+                    Log.d(
+                        "API_ERROR",
+                        "Código HTTP: ${response.code()}"
+                    )
+
                     if (response.isSuccessful) {
+
                         val alumnos = response.body()
 
                         if (alumnos != null) {
+
+                            Log.d(
+                                "API_ERROR",
+                                "Alumnos recibidos: ${alumnos.size}"
+                            )
+
                             adapter = AlumnoAdapter(alumnos)
                             recyclerView.adapter = adapter
 
@@ -75,25 +97,37 @@ class MainActivity : AppCompatActivity() {
                                     }
                                 }
                             )
+
+                            if (alumnos.isEmpty()) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "No hay alumnos registrados",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
                         } else {
+
                             Toast.makeText(
                                 this@MainActivity,
                                 "No se recibieron alumnos",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
+
                     } else {
+
                         val error = response.errorBody()?.string()
 
                         Log.e(
-                            "API",
+                            "API_ERROR",
                             "Error HTTP ${response.code()}: $error"
                         )
 
                         Toast.makeText(
                             this@MainActivity,
-                            "Error al cargar los alumnos",
-                            Toast.LENGTH_SHORT
+                            "Error HTTP: ${response.code()}",
+                            Toast.LENGTH_LONG
                         ).show()
                     }
                 }
@@ -102,15 +136,16 @@ class MainActivity : AppCompatActivity() {
                     call: Call<List<Alumno>>,
                     t: Throwable
                 ) {
+
                     Log.e(
-                        "API",
+                        "API_ERROR",
                         "Error al obtener alumnos",
                         t
                     )
 
                     Toast.makeText(
                         this@MainActivity,
-                        "Error de conexión con el servidor",
+                        "Error: ${t.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -118,7 +153,12 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    // ==========================================
+    // OPCIONES DE ALUMNO
+    // ==========================================
+
     private fun mostrarOpciones(alumno: Alumno) {
+
         val opciones = arrayOf(
             "Modificar alumno",
             "Eliminar alumno"
@@ -127,6 +167,7 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(alumno.nombre)
             .setItems(opciones) { _, index ->
+
                 when (index) {
                     0 -> modificarAlumno(alumno)
                     1 -> confirmarEliminacion(alumno)
@@ -136,7 +177,12 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // ==========================================
+    // MODIFICAR ALUMNO
+    // ==========================================
+
     private fun modificarAlumno(alumno: Alumno) {
+
         val intent = Intent(
             this@MainActivity,
             ActualizarAlumnoActivity::class.java
@@ -150,7 +196,12 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    // ==========================================
+    // CONFIRMAR ELIMINACIÓN
+    // ==========================================
+
     private fun confirmarEliminacion(alumno: Alumno) {
+
         AlertDialog.Builder(this)
             .setTitle("Eliminar alumno")
             .setMessage(
@@ -163,8 +214,16 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // ==========================================
+    // ELIMINAR ALUMNO
+    // ==========================================
+
     private fun eliminarAlumno(alumno: Alumno) {
-        Log.d("API", "Eliminando alumno: ${alumno.id}")
+
+        Log.d(
+            "API_ERROR",
+            "Eliminando alumno: ${alumno.id}"
+        )
 
         api.eliminarAlumno(alumno.id).enqueue(
             object : Callback<Void> {
@@ -173,7 +232,9 @@ class MainActivity : AppCompatActivity() {
                     call: Call<Void>,
                     response: Response<Void>
                 ) {
+
                     if (response.isSuccessful) {
+
                         Toast.makeText(
                             this@MainActivity,
                             "Alumno eliminado correctamente",
@@ -181,18 +242,20 @@ class MainActivity : AppCompatActivity() {
                         ).show()
 
                         cargarDatos()
+
                     } else {
+
                         val error = response.errorBody()?.string()
 
                         Log.e(
-                            "API",
-                            "Error HTTP ${response.code()}: $error"
+                            "API_ERROR",
+                            "Error al eliminar: ${response.code()} - $error"
                         )
 
                         Toast.makeText(
                             this@MainActivity,
-                            "Error al eliminar el alumno",
-                            Toast.LENGTH_SHORT
+                            "Error al eliminar alumno: ${response.code()}",
+                            Toast.LENGTH_LONG
                         ).show()
                     }
                 }
@@ -201,16 +264,17 @@ class MainActivity : AppCompatActivity() {
                     call: Call<Void>,
                     t: Throwable
                 ) {
+
                     Log.e(
-                        "API",
+                        "API_ERROR",
                         "Error al eliminar alumno",
                         t
                     )
 
                     Toast.makeText(
                         this@MainActivity,
-                        "Error de conexión al eliminar",
-                        Toast.LENGTH_SHORT
+                        "Error: ${t.message}",
+                        Toast.LENGTH_LONG
                     ).show()
                 }
             }
